@@ -43,7 +43,7 @@ async function inner(request,env){
   const t=String(b.text||'').trim().slice(0,1000);if(!t)return J({error:'رسالة فارغة'},400);
   const h=(await env.DB.prepare('SELECT role,text FROM (SELECT id,role,text FROM msgs WHERE uid=? ORDER BY id DESC LIMIT 10) ORDER BY id').bind(me.id).all()).results;
   let reply;
-  try{const r=await env.AI.run('@cf/meta/llama-3.1-8b-instruct',{messages:[{role:'system',content:SYS},...h.map(m=>({role:m.role,content:m.text})),{role:'user',content:t}],max_tokens:600});reply=r.response||'ما قدرت أرد، جرب مرة ثانية.';}
+  try{const r=await env.AI.run('@cf/mistralai/mistral-small-3.1-24b-instruct',{messages:[{role:'system',content:SYS},...h.map(m=>({role:m.role,content:m.text})),{role:'user',content:t}],max_tokens:600});reply=r.response||'ما قدرت أرد، جرب مرة ثانية.';}
   catch(e){reply='⚠️ المساعد غير متاح حالياً، تأكد من ربط Workers AI.';}
   await env.DB.batch([env.DB.prepare('INSERT INTO msgs(uid,role,text) VALUES(?,?,?)').bind(me.id,'user',t),env.DB.prepare('INSERT INTO msgs(uid,role,text) VALUES(?,?,?)').bind(me.id,'assistant',reply)]);
   return J({reply});
@@ -66,3 +66,4 @@ async function inner(request,env){
  return J({error:'غير موجود'},404);
 }
 export default{async fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith('/api/'))return handle(request,env);const r=await env.ASSETS.fetch(request);if(/\.(m4a|mp3|mp4|wav|ogg|aac)$/i.test(u.pathname)&&(r.headers.get('content-type')||'').includes('text/html'))return new Response('not found',{status:404});return r}};
+
