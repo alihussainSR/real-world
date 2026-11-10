@@ -66,4 +66,3 @@ async function inner(request,env){
  return J({error:'غير موجود'},404);
 }
 export default{async fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith('/api/'))return handle(request,env);const r=await env.ASSETS.fetch(request);if(/\.(m4a|mp3|mp4|wav|ogg|aac)$/i.test(u.pathname)&&(r.headers.get('content-type')||'').includes('text/html'))return new Response('not found',{status:404});return r}};
-
